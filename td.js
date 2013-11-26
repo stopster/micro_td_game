@@ -1,3 +1,4 @@
+var App = App || {};
 (function(ctx, width, height, size, A, B, maxTowers, maxCreeps, startGold, towerCost, creepBounty){
 	var	towers = [],
 		toBuild = [],
@@ -94,6 +95,8 @@
 		this.speed = 8;
 		this.target = null;
 		this.updated = 0;
+
+		this.test = m.random();
 	}
 
 	Creep.prototype.changeHP = function(amount){
@@ -218,4 +221,11 @@
 	document.getElementById("canvas").addEventListener("click", function(e){
 		startGold>=towerCost && towers.length < maxTowers && toBuild.push([e.offsetX, e.offsetY]);
 	});
+
+	// Export into App namespace
+	App.Base = Base;
+	App.Tower = Tower;
+	App.Creep = Creep;
+	App.towers = towers;
+	App.creeps = creeps;
 })(document.getElementById("canvas").getContext("2d"), 300, 300, 20, [0, 0], [110, 115], 4, 1, 200, 100, 20);
