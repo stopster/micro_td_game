@@ -1,11 +1,12 @@
 var App = App || {};
-(function(ctx, width, height, size, A, B, maxTowers, maxCreeps, startGold, towerCost, creepBounty){
+(function(canvas, width, height, size, A, B, maxTowers, maxCreeps, startGold, towerCost, creepBounty){
 	var	towers = [],
 		toBuild = [],
 		creeps = [],
 		lastUpdated = 0,
 		gameRunning = true,
 		m = Math,
+		ctx = canvas.getContext("2d"),
 		counter = document.getElementById("counter");
 
 	function getClosest(to, objects, initial){
@@ -41,6 +42,7 @@ var App = App || {};
 		this.shootPoint = null;
 		this.charged = 1;
 		this.hp = 50;
+		this.range = 50;
 	}
 
 	Tower.prototype.changeHP = function(amount){
@@ -77,16 +79,18 @@ var App = App || {};
 
 	Tower.prototype.attack = function(){
 		if(!this.target || this.target.hp<0){
-				this.target = getClosest(this, creeps, {x: 1000, y:1000});
-			if(!this.target || this.target.x === 1000){
+				this.target = getClosest(this, creeps, {x: -1000, y: -1000});
+			if(!this.target || this.target.x === -1000){
 				this.target = null;
-				return;
+				return false;
 			}
 		}
 
 		this.target.changeHP(-10);
 		this.charged = 0;
 		this.shootPoint = {x: this.target.x, y: this.target.y};
+
+		return true;
 	};
 
 	function Creep(x, y, i){
@@ -127,6 +131,9 @@ var App = App || {};
 	Creep.prototype.attack = function(){
 		if(this.near(this.target)){
 			this.target.changeHP(-5);
+			return true;
+		} else{
+			return false;
 		}
 	};
 
@@ -146,7 +153,9 @@ var App = App || {};
 		}
 		this.draw(time);
 	};
+
 	var base = new Base(B[0], B[1], 500);
+
 	var timeMark30 = 0;
 	var timeMark500 = 0;
 	var timeMark8000 = 0;
@@ -155,6 +164,7 @@ var App = App || {};
 	var bg = ctx.createRadialGradient(150, 150, 30, 150, 150, 220);
 	bg.addColorStop(0, "#ffef8d");
 	bg.addColorStop(1, "white");
+
 	window.requestAnimationFrame(function gameLoop(time){
 		if(time - timeMark8000 > 8000){
 			maxCreeps *= 1.4;
@@ -173,7 +183,6 @@ var App = App || {};
 			relaxWave = true;
 		}
 		if(time - timeMark30 > 30){
-			// ctx.clearRect(0, 0, width, height);
 			ctx.fillStyle = bg;
 			ctx.fillRect(0, 0, width, height);
 			for(var i=0, ii=toBuild.length; i<ii && ii<=maxTowers; i++){
@@ -218,7 +227,7 @@ var App = App || {};
 			ctx.fillText("Game over", width/2 - 50, height/2 - 10);
 		}
 	});
-	document.getElementById("canvas").addEventListener("click", function(e){
+	canvas.addEventListener("click", function(e){
 		startGold>=towerCost && towers.length < maxTowers && toBuild.push([e.offsetX, e.offsetY]);
 	});
 
@@ -228,4 +237,5 @@ var App = App || {};
 	App.Creep = Creep;
 	App.towers = towers;
 	App.creeps = creeps;
-})(document.getElementById("canvas").getContext("2d"), 300, 300, 20, [0, 0], [110, 115], 4, 1, 200, 100, 20);
+	App.base = base;
+})(document.getElementById("canvas"), 300, 300, 20, [0, 0], [110, 115], 4, 1, 200, 100, 20);
